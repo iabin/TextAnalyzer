@@ -1,7 +1,7 @@
 # TextAnalyze
 Analizador de Texto, para ejecutarlo debe ser de la siguente manera</B>
 
-<i><br>"java  -jar textAnalyzer.jar <archivo1>  <archivo2> ... <archivo>  -o <Directorio>"</i></br> 
+<i><br>"java  -jar textAnalyzer.jar archivo1  archivo2 ... archivoN  -o Directorio"</i></br> 
 
 </B>
 
