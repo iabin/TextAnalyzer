@@ -1,0 +1,203 @@
+package mx.unam.ciencias.textAnalyzer;
+import mx.unam.ciencias.edd.*;
+import mx.unam.ciencias.graficador.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.Normalizer;
+
+/**
+ * Clase que modela un Analizador de textos, recibe un file y regresa una serie de estadisticas
+ */
+public class TextAnalyzer {
+    //Genera un conjunto y da contiene en tiempo constante
+    private Diccionario<String,ArrayString> diccionario;
+    /** ArbolAVL usado para ordenar los elementos*/
+    protected ArbolAVL<ArrayString> arbol;//Prefiero usar el AVL porque el tiempo es menor
+    // en sus operaciones, las cuales se usaran mucho
+    /**Numero de palabras diferentes */
+    private int elementos;
+    /**Archivo del cual se analizara*/
+    private File file;
+
+    /**
+     * Constructor Vacio
+     */
+    public TextAnalyzer() {
+        elementos = 0;
+        diccionario = new Diccionario<>();
+        arbol = new ArbolAVL<>();
+        file = new File("");
+    }
+
+    /**
+     * Constructor que recibe un File y analiza el texto, en caso de que exista
+     * @param archivo
+     */
+    public TextAnalyzer(File archivo) {
+        this.file = archivo;
+        ArbolBinarioCompleto<String> aux = new ArbolBinarioCompleto<>();
+        Diccionario<String,ArrayString> dic = new Diccionario<>();
+
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(archivo));
+            String linea;
+            while((linea = br.readLine()) != null) {
+                String nuevaLinea = linea.replaceAll("[^\\p{L}\\p{Nd}]+", " ");
+                nuevaLinea = Normalizer.normalize(nuevaLinea, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+                String[] palabrasSeparadas = nuevaLinea.split(" ");
+                for (String palabra : palabrasSeparadas) {
+                    if(palabra.length()>2)
+                        aux.agrega(palabra);
+                }
+
+            }
+	    dic = new Diccionario<>(aux.getElementos());
+            for (String palabra:aux) {
+                if(!palabra.equals("")) {
+                    if(dic.contiene(palabra)) {
+                        dic.get(palabra).repeticiones++;
+                    }else {
+                        dic.agrega(palabra,new ArrayString(palabra));
+                    }
+                }
+
+            }
+            br.close();
+        } catch (IOException e){
+            System.err.println("ERROR EN LA LECTURA DE ARCHIVO");
+        }
+        this.diccionario = dic;
+        ArbolAVL<ArrayString> af = new ArbolAVL<>();
+        for(ArrayString f : dic)
+            af.agrega(f);
+        this.elementos = af.getElementos();
+        this.arbol = af;
+    }
+
+    /**Imprime en la salida estandar tadas las palabras y e
+     * numero de repeticiones.
+     */
+    public void imprime() {
+        for (ArrayString g:arbol) {
+            System.out.println("PALABRA: "+g.string+"     REPETICIONES: "+g.repeticiones);
+        }
+    }
+
+    /**
+     * Metodo que regresa una lista con las "n" palabras menos repetidas
+     * @param n Tamaño de la lista que regresara
+     * @return Lista con los n elementos menos repetidos
+     */
+    public Lista<ArrayString> losMenosRepetidos(int n) {
+        if(n<1||n>arbol.getElementos())
+            throw new IllegalArgumentException();
+        int i = 1;
+        Lista<ArrayString> lista = new Lista<>();
+        for(ArrayString hh : arbol) {
+            if(i<=n){
+                lista.agregaInicio(hh);
+                i++;
+            }else{ break;}
+        }
+        return lista;
+    }
+
+    /**
+     * Metodo que regresa los n elementos Mas repetidos en un archivo
+     * @param n Tamaño de la lista
+     * @return Lista con los n elementos mas repetidos en un archivo
+     */
+    public Lista<ArrayString> losMasRepetidos(int n) {
+        if(n<1||n>arbol.getElementos())
+            n=arbol.getElementos();
+        int i = arbol.getElementos();
+        //Podria haber sido un arreglo, pero creo que ambos disfrutamos mas de esta bonita lista
+        Lista<ArrayString> lista = new Lista<>();
+        for(ArrayString hh : arbol) {
+            if(i<=n){
+                lista.agregaInicio(hh);
+            }
+            i--;
+        }
+        return lista;
+    }
+
+    /**
+     * Metodo que sobre escribe
+     * @param e Objeto e a comparar
+     * @return True si los 2 objetos son iguales
+     *          False si son diferentes
+     */
+    @Override
+    public boolean equals(Object e) {
+        if(e.getClass()!=this.getClass())
+            return false;
+        TextAnalyzer o = (TextAnalyzer) e;
+        return o.arbol.equals(this.arbol);
+
+    }
+
+    /**
+     * Metodo que regresa una lista de que palabras tienen en comun mayores a 5 letras
+     * @param texto TextAnalizer con palabras
+     * @return  Una lista con las palabras repetidas
+     */
+    public Lista<ArrayString> enComun(TextAnalyzer texto){
+        Lista<ArrayString> lista = new Lista<>();
+        for (ArrayString g : this.diccionario){
+            if(g.string.length()<5)
+                continue;
+            if(texto.diccionario.contiene(g.string))
+                lista.agrega(g);
+        }
+        return lista;
+
+    }
+
+    /**
+     * Metodo que calcula el codigo HTML de la representacion de del TextAnalizer
+     * Regresa una tabla, una grafica de pastel, 2 arboles ordenados
+     * @return String que representa el TextAnalizer en HTML
+     */
+    public String html() {
+
+        ArbolAVL<ArrayString> jj = new ArbolAVL<>();
+        ArbolRojinegro<ArrayString> j =  new ArbolRojinegro<>();
+        for(ArrayString a:losMasRepetidos(15)) {
+            j.agrega(a);
+            jj.agrega(a);
+        }
+        String  y = "";
+        for(ArrayString a:losMasRepetidos(1)) {
+            y=a.string;
+        }
+        String h = "";
+        for(ArrayString f :losMasRepetidos(arbol.getElementos())) {
+            h = (h+"<tr>\r\n"
+		 +"<td>"+f.string+"</td>"+"\r\n"+
+		 "<td>"+f.repeticiones+"</td>"+"\r\n");
+        }
+
+        String g = ("<table border=\"1\" style=\"width:100%\">\n" +
+		    "  <tr>\n" +
+		    "    <td>PALABRA</td>\n" +
+		    "    <td>REPETICIONES</td>\n" +
+		    h);
+
+        return g;
+    }
+
+    /**
+     * Metodo toString regresa una representacion en String del TextAnalizer
+     * @return String con la representacion en cadenas
+     */
+    @Override
+    public String toString(){
+        return file.getName();
+
+    }
+
+}
