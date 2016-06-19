@@ -1,5 +1,4 @@
-# TextAnalyzer
-<<<<<<< HEAD
+# TextAnalyze
 Analizador de Texto, para ejecutarlo debe ser de la siguente manera</B>
 
 <i><br>"java  -jar textAnalyzer.jar <archivo1>  <archivo2> ... <archivo>  -o <Directorio>"</i></br> 
@@ -11,9 +10,7 @@ estará como en el ejemplo de abajo una tabla con las veces que se repiten las p
 
 </B>EJEMPLO DE HARRY POTTER Y LA PIEDRA FILOSOFAL
 
-=======
->>>>>>> 983fccd0f2cf5492e7979b6dfe889b713c135261
-<meta charset="utf-8" />
+
 <table border="1" style="width:100%">
   <tr>
     <td>PALABRA</td>
